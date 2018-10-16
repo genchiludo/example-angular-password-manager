@@ -3,7 +3,9 @@ import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { auth } from 'firebase/app';
 import { pluck, map } from 'rxjs/operators';
-import { from } from 'rxjs';
+import { from, Observable } from 'rxjs';
+import { Credential } from './models/credential.model';
+import { User } from 'firebase/auth';
 
 @Injectable()
 export class AppService {
@@ -15,25 +17,25 @@ export class AppService {
     this.credentials = this.af.list('/credentials');
   }
 
-  public isLogged() {
+  public isLogged(): User {
     return this.afAuth.user;
   }
 
-  public getUser() {
+  public getUser(): User {
     return this.afAuth.user.pipe(
       pluck('displayName'),
     );
   }
 
-  public doLogin() {
+  public doLogin(): void {
     this.afAuth.auth.signInWithPopup(new auth.GoogleAuthProvider());
   }
 
-  public doLogout() {
+  public doLogout(): void {
     this.afAuth.auth.signOut();
   }
 
-  public getCredentials$() {
+  public getCredentials$(): Observable<Credential[]> {
     return this.credentials.snapshotChanges().pipe(
       map(data => data.map(obj => ({
         key: obj.key,
@@ -42,11 +44,11 @@ export class AppService {
     );
   }
 
-  public createCredential$(credential) {
+  public createCredential$(credential: Credential): Observable<any> {
     return from(this.credentials.push(credential));
   }
 
-  public deleteCredentials$(credential) {
+  public deleteCredentials$(credential: Credential): Observable<any> {
     return from(this.credentials.remove(credential.key));
   }
 }

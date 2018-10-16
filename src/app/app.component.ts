@@ -3,8 +3,10 @@ import { Observable } from 'rxjs';
 import { map, switchMap, filter } from 'rxjs/operators';
 import { AppService } from './app.service';
 import { MatDialog } from '@angular/material';
+import { User } from 'firebase/auth';
 import { AddCredentialDialogComponent } from './components/add-credential-dialog/add-credential-dialog.component';
 import { DeleteCredentialDialogComponent } from './components/delete-credential-dialog/delete-credential-dialog.component';
+import { Credential } from './models/credential.model';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +16,7 @@ import { DeleteCredentialDialogComponent } from './components/delete-credential-
 })
 
 export class AppComponent {
-  public credentials$: Observable<any>;
+  public credentials$: Observable<Credential[]>;
   public user$;
 
   constructor(
@@ -25,19 +27,19 @@ export class AppComponent {
     this.credentials$ = this.service.getCredentials$();
   }
 
-  public openAddModal() {
+  public openAddModal(): void {
     const modal$ = this.dialog.open(AddCredentialDialogComponent, {
       width: '600px',
     }).afterClosed();
 
     modal$.pipe(
       filter(res => res),
-      map(fields => Object.assign({}, ...Object.keys(fields).map(key => ({[key]: fields[key].value })))),
-      switchMap(credential => this.service.createCredential$(credential)),
+      map((fields: Credential) => Object.assign({}, ...Object.keys(fields).map(key => ({[key]: fields[key].value })))),
+      switchMap((credential: Credential) => this.service.createCredential$(credential)),
     ).subscribe();
   }
 
-  public onDeleteCredential(credential) {
+  public onDeleteCredential(credential: Credential): void {
     const modal$ = this.dialog.open(DeleteCredentialDialogComponent, {
       width: '300px',
     }).afterClosed();
@@ -48,19 +50,19 @@ export class AppComponent {
     ).subscribe();
   }
 
-  public isLogged() {
+  public isLogged(): User {
     return this.service.isLogged();
   }
 
-  public getUser() {
+  public getUser(): User {
     return this.service.getUser();
   }
 
-  public doLogin() {
+  public doLogin(): void {
     this.service.doLogin();
   }
 
-  public doLogout() {
+  public doLogout(): void {
     this.service.doLogout();
   }
 }
